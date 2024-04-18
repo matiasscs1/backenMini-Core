@@ -54,10 +54,10 @@ function computeGrades(periods) {
 
         finalGrades[studentId] = {
             name: student.name,
-            grade: average.toFixed(2),
-            needed: average < 6 ? 6 - average.toFixed(2) : 0,
-            p1: p1.toFixed(2),
-            p2: p2.toFixed(2)
+            grade: average,
+            needed: average < 6 ? 6 - average : 0,
+            p1: p1,
+            p2: p2
         };
     }
 
