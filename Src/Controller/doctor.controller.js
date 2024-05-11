@@ -89,6 +89,73 @@ export const deleteDoctorId = async (req, res) => {
     }
 };
 
+// eliminar por correo 
+export const deleteDoctorEmail = async (req, res) => {
+    try {
+        const doctorEmail = req.body.email; // Correo del usuario desde el body
+        const deletedDoctor = await Doctor.findOneAndDelete({ email: doctorEmail });
+        if (!deletedDoctor) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+        res.status(200).json({ message: "Usuario eliminado correctamente" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// obtener todos los doctores 
+export const getDoctor = async (req, res) => {
+    try {
+        const doctors = await Doctor.find();
+        res.status(200).json(doctors);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+//actualizar los doctores por _id, el password no se podra actualizar y no se debe enviar para actualizar 
+export const updateDoctorId = async (req, res) => {
+    try {
+        const doctorId = req.body._id; // ID del usuario desde el body
+        let doctor = req.body; // Datos del usuario desde el body
+
+        // Verificar si se está actualizando la contraseña
+        if (doctor.password) {
+            // Encriptar la contraseña antes de guardarla en la base de datos
+            doctor.password = await bcrypt.hash(doctor.password, 10); // Se encripta la contraseña usando bcrypt
+        }
+
+        // Verificar si el teléfono, el correo electrónico o el número de matrícula médica ya existen
+        const existingDoctor = await Doctor.findOne({ $or: [{ telefono: doctor.telefono }, { email: doctor.email }, { numeroMatricula: doctor.numeroMatricula }] });
+        if (existingDoctor && existingDoctor._id.toString() !== doctorId) {
+            return res.status(400).json({ message: "El teléfono, el correo electrónico o el número de matrícula médica ya existen" });
+        }
+
+        const updatedDoctor = await Doctor.findByIdAndUpdate(doctorId, doctor, { new: true });
+        if (!updatedDoctor) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+        res.status(200).json(updatedDoctor);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// obtener doctor por id 
+export const getDoctorId = async (req, res) => {
+    try {
+        const doctorId = req.body._id; // ID del usuario desde el body
+        const doctor = await Doctor.findById(doctorId);
+        if (!doctor) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+        res.status(200).json(doctor);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
 // metodo para que no se pueda entrar a las rutas sin permiso 
 
 export const profile = async (req, res) => {

@@ -1,40 +1,50 @@
-import mongose from 'mongoose';
+import mongoose from 'mongoose';
 
-const userSchema = new  mongose.Schema({
-   username:{
-         type: String,
-         required: true
-    },
-    email:{
+const pacienteSchema = new mongoose.Schema({
+    id_doctor: {
         type: String,
         required: true
     },
-    nacimiento:{
-         type: Date,
-         required: true,
-
-    },
-    genero:{
+    nombres: {
         type: String,
-        required: true,
+        required: true
     },
-    telefono:{
+    apellidos: {
         type: String,
-        required: true,
+        required: true
     },
-    nombre:{
+    cedula:{
         type: String,
-        required: true,
+        required:true
     },
-    direccion:{
-        type: String,
-        required: true,
-
-    },
-    ciudad:{
-        type: String,
-        required: true,
-    },
+    edad:{
+         type:String,
+         required:true
+     },
+     contacto_emergencia:{
+         type:String,
+         required:true
+     },
+     motivo_consulta:{
+         type:String,
+         required:true
+     },
+     sintomas:{
+          type:String, 
+          required:false 
+      }, 
+      alergias:{ 
+          type:String, 
+          required:false 
+      }, 
+      diagnostico:{ 
+          type:String, 
+          required:true 
+      },  
+       medicamentoAtomar:{  
+           type:String,  
+           required:true  
+       }   
 });
 
-export default mongose.model('User', userSchema);
+export default mongoose.model('User', pacienteSchema);

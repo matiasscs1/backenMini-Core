@@ -1,74 +1,86 @@
 // user.controller.js
 
 import { json } from "express";
-import User from "../Model/user.model.js";
+import Paciente from "../Model/user.model.js";
 
-// Crear un nuevo usuario
-export const createUser = async (req, res) => {
-    const {username, email,  nacimiento, genero, telefono, nombre, direccion, ciudad} = req.body;
-    const newUser = new User({ username, email, nacimiento, genero, telefono, nombre, direccion, ciudad });
-    await newUser.save();
-    res.status(200).json({message: "Usuario creado exitosamene"});
+
+
+// Crear un nuevo paciente
+export const createPaciente = async (req, res) => {
+    const { id_doctor, nombres, apellidos, cedula, edad, contacto_emergencia, motivo_consulta, sintomas, alergias, diagnostico, medicamentoAtomar } = req.body;
+    const newPaciente = new Paciente({ id_doctor, nombres, apellidos, cedula, edad, contacto_emergencia, motivo_consulta, sintomas, alergias, diagnostico, medicamentoAtomar });
+    await newPaciente.save();
+    res.status(200).json({ message: "Paciente creado exitosamente" });
 };
 
-// Obtener todos los usuarios
-export const getUsers = async (req, res) => {
+// Obtener todos los pacientes
+export const getPacientes = async (req, res) => {
     try {
-        const users = await User.find();
-        res.status(200).json(users);
+        const pacientes = await Paciente.find();
+        res.status(200).json(pacientes);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-
-
-
-// Actualizar un usuario por ID
-export const updateUserById = async (req, res) => {
+//
+export const updatePacienteById = async (req, res) => {
     try {
-        const userId = req.params.id; // ID del usuario desde la URL
-        const updatedUser = req.body; // Datos actualizados del usuario
-        const user = await User.findByIdAndUpdate(userId, updatedUser, { new: true });
-        if (!user) {
-            return res.status(404).json({ message: "Usuario no encontrado" });
+        const pacienteId = req.params.id; // ID del paciente desde la URL
+        const updatedPaciente = req.body; // Datos actualizados del paciente
+
+        // Verificar si la cédula ya existe en la base de datos
+        const existingPacienteCedula = await Paciente.findOne({ cedula: updatedPaciente.cedula });
+        if (existingPacienteCedula && existingPacienteCedula._id.toString() !== pacienteId) {
+            return res.status(400).json({ message: "La cédula ya está en uso" });
         }
-        res.status(200).json(user);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
 
-
-
-// Obtener un usuario por ID
-export const getUserById = async (req, res) => {
-    try {
-        const userId = req.params.id; // ID del usuario desde la URL
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: "Usuario no encontrado" });
+        // Verificar si el email ya existe en la base de datos
+        const existingPacienteEmail = await Paciente.findOne({ email: updatedPaciente.email });
+        if (existingPacienteEmail && existingPacienteEmail._id.toString() !== pacienteId) {
+            return res.status(400).json({ message: "El email ya está en uso" });
         }
-        res.status(200).json(user);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
 
-
-
-
-// Eliminar un usuario por ID
-export const deleteUserById = async (req, res) => {
-    try {
-        const userId = req.params.id; // ID del usuario desde la URL
-        const deletedUser = await User.findByIdAndDelete(userId);
-        if (!deletedUser) {
-            return res.status(404).json({ message: "Usuario no encontrado" });
+        // Verificar si el Número_de_matriculaMedica ya existe en la base de datos
+        const existingPacienteMatricula = await Paciente.findOne({ Número_de_matriculaMedica: updatedPaciente.Número_de_matriculaMedica });
+        if (existingPacienteMatricula && existingPacienteMatricula._id.toString() !== pacienteId) {
+            return res.status(400).json({ message: "El Número_de_matriculaMedica ya está en uso" });
         }
-        res.status(200).json({ message: "Usuario eliminado correctamente" });
+
+        const paciente = await Paciente.findByIdAndUpdate(pacienteId, updatedPaciente, { new: true });
+        if (!paciente) {
+            return res.status(404).json({ message: "Paciente no encontrado" });
+        }
+        res.status(200).json(paciente);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
+
+// Obtener todos los pacientes por ID del doctor
+export const getPacientesByDoctorId = async (req, res) => {
+    try {
+        const doctorId = req.params.id;
+        const pacientes = await Paciente.find({ id_doctor: doctorId });
+        res.status(200).json(pacientes);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
+// Eliminar un paciente por cedula
+export const deletePacienteById = async (req, res) => {
+    try {
+        const cedula = req.body.cedula;
+        const paciente = await Paciente.findOneAndDelete({ cedula: cedula });
+        if (!paciente) {
+            return res.status(404).json({ message: "Paciente no encontrado" });
+        }
+        res.status(200).json({ message: "Paciente eliminado exitosamente" });
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}

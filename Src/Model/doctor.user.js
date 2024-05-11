@@ -48,6 +48,10 @@ const doctorSchema = new  mongose.Schema({
         required: true,
         unique: true
         
+    },
+    Fecha_de_Registro:{
+        type: Date,
+        default: Date.now
     }
     
 });
