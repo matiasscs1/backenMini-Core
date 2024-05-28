@@ -17,20 +17,22 @@ const corsOptions = {
       'http://localhost:5173',
       'https://legendary-faun-c649cc.netlify.app',
       'https://cliente-mini-core.vercel.app',
-      'https://cliente-mini-core-f83k65dt9-matis-projects-3d0af87c.vercel.app/'
+      'https://adminmapp.onrender.com',
+      
     ];
     if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
-  }
+  },
+  credentials: true
 };
 
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
 app.use(routes);
 app.use(bodyParser.json());
-app.use(cookieParser());
 
 export default app;

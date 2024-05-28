@@ -13,6 +13,10 @@ const pacienteSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    email: {
+        type: String,
+        required: true
+    },
     cedula:{
         type: String,
         required:true
@@ -30,20 +34,18 @@ const pacienteSchema = new mongoose.Schema({
          required:true
      },
      sintomas:{
-          type:String, 
+          type:[String], 
           required:false 
       }, 
       alergias:{ 
-          type:String, 
+          type:[String], 
           required:false 
       }, 
       diagnostico:{ 
-          type:String, 
-          required:true 
-      },  
+          type:String
+        },  
        medicamentoAtomar:{  
-           type:String,  
-           required:true  
+           type:String
        }   
 });
 

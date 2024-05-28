@@ -1,17 +1,19 @@
 import bcrypt from 'bcrypt';
 import Doctor from '../Model/doctor.user.js';
 import { createAcessToken } from '../libs/jwt.js';
+import jwt from 'jsonwebtoken'
 
+import { TOKEN_SECRET } from "../config.js"
 // Registrar un nuevo doctor
 export const postDoctor = async (req, res) => {
 
     try {
-     
+
         const doctor = req.body; // Se obtiene el objeto 'doctor' desde el cuerpo de la solicitud
         // Se busca un doctor en la base de datos por su correo electrónico
         const userFound = await Doctor.findOne({ email: doctor.email });
         if (userFound) {
-            return res.status(400).json( ['El usuario ya existe'] ); // Si el usuario ya existe, se devuelve un mensaje de error
+            return res.status(400).json(['El usuario ya existe']); // Si el usuario ya existe, se devuelve un mensaje de error
         }
         // Encriptar la contraseña antes de guardarla en la base de datos
         doctor.password = await bcrypt.hash(doctor.password, 10); // Se encripta la contraseña usando bcrypt
@@ -142,19 +144,20 @@ export const updateDoctorId = async (req, res) => {
 };
 
 // obtener doctor por id 
+
 export const getDoctorId = async (req, res) => {
     try {
-        const doctorId = req.body._id; // ID del usuario desde el body
+        const doctorId = req.params.id; // ID del usuario desde la URL
         const doctor = await Doctor.findById(doctorId);
         if (!doctor) {
             return res.status(404).json({ message: "Usuario no encontrado" });
         }
+        res.set('Cache-Control', 'no-store');
         res.status(200).json(doctor);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
-
 
 // metodo para que no se pueda entrar a las rutas sin permiso 
 
@@ -165,9 +168,32 @@ export const profile = async (req, res) => {
         id: doctorFound._id,
         email: doctorFound.email,
     });
-    
-
 }
+
+export const verifyToken = async (req, res) => {
+    console.log("Verifying token")
+
+    const { token } = req.cookies
+
+    console.log(token)
+
+    if (!token) return res.status(401).json({ message: "no token" })
+
+    jwt.verify(token, TOKEN_SECRET, async (err, user) => {
+
+        if (err) return res.status(500).json({ message: "no token" });
+
+        const userFound = await Doctor.findById(user.id);
+
+        if (!userFound) return res.status(404).json({ message: "no user found" })
+
+        return res.json({
+            id: userFound._id,
+            email: userFound.email,
+        })
+    })
+}
+
 
 
 

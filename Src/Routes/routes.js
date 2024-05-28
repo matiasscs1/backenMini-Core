@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { createPaciente, deletePacienteById, getPacientesByDoctorId, getPacientes, updatePacienteById } from "../Controller/user.controller.js";
-import { postDoctor, login, deleteDoctorId, logout, profile, getDoctor, deleteDoctorEmail, updateDoctorId, getDoctorId } from "../Controller/doctor.controller.js"
+import {postSignosVitales} from "../Controller/signos_vitales.controller.js"
+import { postPatologia, getPatologias,getPatologiasByIdPaciente, updatePatologiaById } from "../Controller/patologias_personales.controller.js";
+import { postDoctor, login, deleteDoctorId, logout, profile, getDoctor, deleteDoctorEmail, updateDoctorId, getDoctorId, verifyToken } from "../Controller/doctor.controller.js"
 import {authRequired} from "../middlewares/validateToken.js"
 const router = Router();
 // rutas para los usuarios 
@@ -9,6 +11,11 @@ router.post("/user", createPaciente);
 router.put("/user/:id",  updatePacienteById);
 router.get("/user/:id",   getPacientesByDoctorId);
 router.delete("/user",   deletePacienteById);
+router.post("/patologia", postPatologia);
+router.get("/patologia", getPatologias);
+router.get("/patologia/:id", getPatologiasByIdPaciente);
+router.put("/patologia/:id", updatePatologiaById);
+router.post("/signos_vitales", postSignosVitales);
 /// ruta para los doctores 
 router.post("/logout", logout)
 router.post("/login",  login );
@@ -17,11 +24,14 @@ router.get("/doctors", getDoctor);
 router.get("/doctors/:id", getDoctorId);
 router.delete("/doctors", deleteDoctorEmail);
 router.put("/doctors/:id",  updateDoctorId);
-
 router.delete("/doctors",authRequired, deleteDoctorId);
 
 /// ruta para proteger las rutas
 router.get("/profile", authRequired ,profile);
+
+///
+
+router.get("/verify", verifyToken)
 
 
 
