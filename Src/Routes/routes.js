@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { createPaciente, deletePacienteById, getPacientesByDoctorId, getPacientes, updatePacienteById } from "../Controller/user.controller.js";
-import {postSignosVitales} from "../Controller/signos_vitales.controller.js"
+import { createPaciente, deletePacienteById, getPacientesByDoctorId, getPacientes, updatePacienteById, getPacienteById, getPacienteByIdDiagnostico  } from "../Controller/user.controller.js";
+import {updateDiagnostico} from '../Controller/reglas.diagnostico.js'
+import {postSignosVitales, getSignosVitalesId, getSignosVitalesIdDiagnostico} from "../Controller/signos_vitales.controller.js"
 import { postPatologia, getPatologias,getPatologiasByIdPaciente, updatePatologiaById } from "../Controller/patologias_personales.controller.js";
 import { postDoctor, login, deleteDoctorId, logout, profile, getDoctor, deleteDoctorEmail, updateDoctorId, getDoctorId, verifyToken } from "../Controller/doctor.controller.js"
 import {authRequired} from "../middlewares/validateToken.js"
@@ -9,13 +10,20 @@ const router = Router();
 router.get("/user",  getPacientes );
 router.post("/user", createPaciente);
 router.put("/user/:id",  updatePacienteById);
+// diagnostioc 
+router.get("/signos_vitalesD/:id", getSignosVitalesIdDiagnostico);
+router.get("/user/propio/:id",   getPacienteByIdDiagnostico);
+///
+router.get("/user/paciente:id",   getPacienteById);
 router.get("/user/:id",   getPacientesByDoctorId);
 router.delete("/user",   deletePacienteById);
 router.post("/patologia", postPatologia);
+router.post("/diagnosticado", updateDiagnostico);
 router.get("/patologia", getPatologias);
 router.get("/patologia/:id", getPatologiasByIdPaciente);
 router.put("/patologia/:id", updatePatologiaById);
 router.post("/signos_vitales", postSignosVitales);
+router.get("/signos_vitales/:id", getSignosVitalesId);
 /// ruta para los doctores 
 router.post("/logout", logout)
 router.post("/login",  login );

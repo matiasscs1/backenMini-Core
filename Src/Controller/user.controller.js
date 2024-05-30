@@ -79,6 +79,39 @@ export const getPacientesByDoctorId = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+// obtener un paciente por su id par mi diagnostco
+export const getPacienteByIdDiagnostico = async (req, res) => {
+    try {
+        const pacienteId = req.params.id;
+        const paciente = await Paciente.findById(pacienteId);
+        
+        if (!paciente) {
+            throw new Error("Paciente no encontrado");
+        }
+        return paciente;
+        
+    }
+    catch (error) {
+        throw new Error(error.message);
+    }
+}
+//// obtener un paciente por su id
+
+export const getPacienteById = async (req, res) => {
+    try {
+        const pacienteId = req.params.id;
+        const paciente = await Paciente.findById(pacienteId);
+        
+        if (!paciente) {
+            throw new Error("Paciente no encontrado");
+        }
+        res.status(200).json(paciente);
+        
+    }
+    catch (error) {
+        throw new Error(error.message);
+    }
+}
 
 
 // Eliminar un paciente por cedula
@@ -95,39 +128,4 @@ export const deletePacienteById = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
-// funcionalidad para comparar las emfermdades y dar un diagnostico con ml js 
-export const getDiagnostico = async (req, res) => {
-    try {
-        const pacienteId = req.params.id;
-        const paciente = await Paciente.findById
-            (pacienteId);
-        if (!paciente) {
-            return res.status(404).json({ message: "Paciente no encontrado" });
-        }
-        // Enfermedades
-        const enfermedades = ["Gripe", "Resfriado", "Fiebre", "Dolor de cabeza", "Dolor de estómago", "Dolor de garganta", "Dolor de espalda", "Dolor de oído", "Dolor de muelas"];
 
-        // Síntomas del paciente
-        const sintomas = paciente.sintomas;
-        let diagnostico = "";
-        let enfermedadesEncontradas = [];
-        for (let i = 0; i < enfermedades.length; i++) {
-            const enfermedad = enfermedades[i];
-            for (let j = 0; j < sintomas.length; j++) {
-                const sintoma = sintomas[j];
-                if (enfermedad.toLowerCase().includes(sintoma.toLowerCase())) {
-                    enfermedadesEncontradas.push(enfermedad);
-                }
-            }
-        }
-        if (enfermedadesEncontradas.length > 0) {
-            diagnostico = "El paciente tiene: " + enfermedadesEncontradas.join(", ");
-        } else {
-            diagnostico = "No se encontraron enfermedades";
-        }
-        res.status(200).json({ diagnostico });
-    }
-    catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-}

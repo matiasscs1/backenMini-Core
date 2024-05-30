@@ -1,14 +1,14 @@
 
 import signos_vitalesModel from "../Model/signos_vitales.model.js";
-
+import { getPacientes } from "./user.controller.js";
 // registrar los signos vitales
 
 export const postSignosVitales = async (req, res) => {
+
+
+
     try {
-        const signoVital_Unico = signos_vitalesModel.findOne({ id : req.params.id });
-        if (signoVital_Unico) {
-            return res.status(400).json({ message: "El paciente ya tiene registrados los signos vitales" });
-        }
+      
         const signos_vitales = {
             id_paciente: req.body.id_paciente,
             temperatura: req.body.temperatura,
@@ -23,7 +23,8 @@ export const postSignosVitales = async (req, res) => {
         res.status(200).json({ message: "Signos vitales registrados exitosamente" });
 
 
-        res.status(200).json({ message: "Signos vitales registrados exitosamente" });
+
+
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -48,17 +49,25 @@ export async function updateSignosVitales(req, res) {
         res.status(500).json({ message: error.message });
     }
 }
-
-// get de signos vitales por id_paciente
-
-export async function getSignosVitalesId(req, res) {
+// diagnostico
+export async function getSignosVitalesIdDiagnostico(req) {
     try {
-        const signos_vitales = await signos_vitalesModel.find({ id_paciente: req.params.id });
-        res.status(200).json(signos_vitales);
+        const signos_vitales = await signos_vitalesModel.findOne({ id_paciente: req.params.id });
+        return signos_vitales;
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        throw new Error(error.message);
     }
 }
+/// front 
+export async function getSignosVitalesId(req, res) {
+    try {
+        const signos_vitales = await signos_vitalesModel.findOne({ id_paciente: req.params.id });
+        res.status(200).json(signos_vitales);
+    } catch (error) {
+        throw new Error(error.message);
+    }
+}
+
 // get signos vitales
 
 export async function getSignosVitales(req, res) {
