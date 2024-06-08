@@ -45,7 +45,7 @@ const pacienteSchema = new mongoose.Schema({
           type:String
         },  
        medicamentoAtomar:{  
-           type:String
+           type:[String]
        }   
 });
 

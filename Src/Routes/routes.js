@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { createPaciente, deletePacienteById, getPacientesByDoctorId, getPacientes, updatePacienteById, getPacienteById, getPacienteByIdDiagnostico  } from "../Controller/user.controller.js";
 import {updateDiagnostico} from '../Controller/reglas.diagnostico.js'
+import {recetasDiagnostico} from '../Controller/Recetas.diagnostico.js'
 import {postSignosVitales, getSignosVitalesId, getSignosVitalesIdDiagnostico} from "../Controller/signos_vitales.controller.js"
 import { postPatologia, getPatologias,getPatologiasByIdPaciente, updatePatologiaById } from "../Controller/patologias_personales.controller.js";
 import { postDoctor, login, deleteDoctorId, logout, profile, getDoctor, deleteDoctorEmail, updateDoctorId, getDoctorId, verifyToken } from "../Controller/doctor.controller.js"
@@ -13,12 +14,14 @@ router.put("/user/:id",  updatePacienteById);
 // diagnostioc 
 router.get("/signos_vitalesD/:id", getSignosVitalesIdDiagnostico);
 router.get("/user/propio/:id",   getPacienteByIdDiagnostico);
+// ver medicamentos 
+router.get("/receta/:id", recetasDiagnostico);
 ///
 router.get("/user/paciente:id",   getPacienteById);
 router.get("/user/:id",   getPacientesByDoctorId);
 router.delete("/user",   deletePacienteById);
 router.post("/patologia", postPatologia);
-router.post("/diagnosticado", updateDiagnostico);
+router.post("/diagnosticado/:id", updateDiagnostico);
 router.get("/patologia", getPatologias);
 router.get("/patologia/:id", getPatologiasByIdPaciente);
 router.put("/patologia/:id", updatePatologiaById);
