@@ -27,6 +27,15 @@ export const createPaciente = async (req, res) => {
 };
 
 // Obtener todos los pacientes
+export const getPacientesD = async () => {
+    try {
+        const pacientes = await Paciente.find();
+        return pacientes;
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 export const getPacientes = async (req, res) => {
     try {
         const pacientes = await Paciente.find();
@@ -67,6 +76,49 @@ export const updatePacienteById = async (req, res) => {
     }
 };
 
+    
+
+// actualizar solo sintomas y alergias 
+
+export const updatePacienteByIdSintomasAlergias = async (req, res) => {
+    try {
+        const pacienteId = req.params.id; // ID del paciente desde la URL
+        const updatedPaciente = req.body; // Datos actualizados del paciente
+
+        // Actualizar los campos de sintomas y alergias
+        updatedPaciente.sintomas = Array.isArray(updatedPaciente.sintomas) ? updatedPaciente.sintomas : [updatedPaciente.sintomas];
+
+        updatedPaciente.alergias = Array.isArray(updatedPaciente.alergias) ? updatedPaciente.alergias : [updatedPaciente.alergias];
+
+        const paciente = await Paciente.findByIdAndUpdate(pacienteId, updatedPaciente, { new: true });
+        if (!paciente) {
+            return res.status(404).json({ message: "Paciente no encontrado" });
+        }
+        res.status(200).json(paciente);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+// actualizar solo medicamentosAtomar
+
+export const updatePacienteByIdMedicamentosAtomar = async (req, res) => {
+    try {
+        const pacienteId = req.params.id; // ID del paciente desde la URL
+        const updatedPaciente = req.body; // Datos actualizados del paciente
+
+        // Actualizar los campos de medicamentoAtomar
+        updatedPaciente.medicamentoAtomar = Array.isArray(updatedPaciente.medicamentoAtomar) ? updatedPaciente.medicamentoAtomar : [updatedPaciente.medicamentoAtomar];
+        
+        const paciente = await Paciente.findByIdAndUpdate(pacienteId, updatedPaciente, { new: true });
+        if (!paciente) {
+            return res.status(404).json({ message: "Paciente no encontrado" });
+        }
+        res.status(200).json(paciente);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
 
 
 // Obtener todos los pacientes por ID del doctor
@@ -114,6 +166,8 @@ export const getPacienteById = async (req, res) => {
 }
 
 
+
+
 // Eliminar un paciente por cedula
 export const deletePacienteById = async (req, res) => {
     try {
@@ -128,4 +182,35 @@ export const deletePacienteById = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
+
+
+export const getPacientesFiltered = async (req, res) => {
+    const { fechaInicio, fechaFin, porcentajeMin, porcentajeMax } = req.body;
+
+    try {
+        const pacientes = await getPacientesD();
+
+        const fechaInicioObj = new Date(fechaInicio);
+        const fechaFinObj = new Date(fechaFin);
+
+   
+
+        const pacientesFiltrados = pacientes.filter(paciente => {
+            const fechaPaciente = new Date(paciente.fecha);
+            return (
+                fechaPaciente >= fechaInicioObj &&
+                fechaPaciente <= fechaFinObj &&
+                paciente.porcentajeCoincidencia >= porcentajeMin &&
+                paciente.porcentajeCoincidencia <= porcentajeMax
+            );
+        });
+
+        res.status(200).json(pacientesFiltrados);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
 

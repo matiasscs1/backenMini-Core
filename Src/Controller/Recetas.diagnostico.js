@@ -1,5 +1,6 @@
+import { getPacienteByIdDiagnostico } from './user.controller.js';
+import Paciente from "../Model/user.model.js";
 
-import {getPacienteByIdDiagnostico} from './user.controller.js';
 
 const medicamentos = [
     {
@@ -178,39 +179,37 @@ const medicamentos = [
     }
 ];
 
-
-
-
-
 // Función para comparar medicamentos
 const compararMedicamentos = (medicamentosPrescritos, medicamentosPredefinidos) => {
+    const medicamentosPrescritosLower = medicamentosPrescritos.map(m => m.trim().toLowerCase());
+    const medicamentosPredefinidosLower = medicamentosPredefinidos.map(m => m.medicamento.toLowerCase());
+
     let coincidencias = 0;
 
-    medicamentosPrescritos.forEach(prescrito => {
-        if (medicamentosPredefinidos.some(predefinido => predefinido.medicamento.toLowerCase() === prescrito.toLowerCase())) {
+    medicamentosPrescritosLower.forEach(prescrito => {
+        if (medicamentosPredefinidosLower.includes(prescrito)) {
             coincidencias++;
         }
     });
 
-    const porcentajeCoincidencia = (coincidencias / medicamentosPredefinidos.length) * 100;
+    const porcentajeCoincidencia = (coincidencias / medicamentosPredefinidosLower.length) * 100;
     return porcentajeCoincidencia;
 };
 
-const compararAlergias = (alergiasPreescritas, alergiasPredefinidas) => {
+// Función para comparar alergias
+const compararAlergias = (alergiasPaciente, medicamentosPrescritos) => {
+    const alergiasPacienteLower = alergiasPaciente.map(a => a.toLowerCase());
+    const medicamentosPrescritosLower = medicamentosPrescritos.map(m => m.trim().toLowerCase());
+
     let coincidencias = [];
 
-    alergiasPreescritas.forEach(preescritas => {
-        alergiasPredefinidas.forEach(predefinida => {
-            if (preescritas.toLowerCase() === predefinida.medicamento.toLowerCase()) {
-                coincidencias.push(preescritas);
-            }
-        });
+    alergiasPacienteLower.forEach(alergia => {
+        if (medicamentosPrescritosLower.includes(alergia)) {
+            coincidencias.push(alergia);
+        }
     });
 
-    // Convertir el array de coincidencias a una cadena con formato adecuado
-    let coincidenciasString = coincidencias.join(', ');
-
-    return coincidenciasString;
+    return coincidencias.join(', ');
 };
 
 // Método async para hacer la comparación de la receta del doctor con la recomendada
@@ -224,29 +223,46 @@ export const recetasDiagnostico = async (req, res) => {
         }
 
         const { diagnostico, medicamentoAtomar, alergias } = paciente;
-        const medicamentosPrescritos = Array.isArray(medicamentoAtomar) ? medicamentoAtomar.map(m => m.trim().toLowerCase()) : [];
+        const medicamentosPrescritos = Array.isArray(medicamentoAtomar) ? medicamentoAtomar.flatMap(m => m.split(',').map(item => item.trim().toLowerCase())) : [];
         const alergiasPaciente = Array.isArray(alergias) ? alergias.map(a => a.trim().toLowerCase()) : [];
+
+        console.log('Diagnóstico:', diagnostico);
+        console.log('Medicamentos prescritos:', medicamentosPrescritos);
+        console.log('Alergias del paciente:', alergiasPaciente);
 
         const enfermedad = medicamentos.find(m => m.enfermedad.toLowerCase() === diagnostico.toLowerCase());
 
         if (!enfermedad) {
+            console.log('Diagnóstico no encontrado en la lista de enfermedades');
             return res.status(404).json({ message: "Diagnóstico no encontrado en la lista de enfermedades" });
         }
 
-        const porcentajeCoincidencia = compararMedicamentos(medicamentosPrescritos, enfermedad.receta);
-        const compararAlergia = compararAlergias(alergiasPaciente, enfermedad.receta);
+        console.log('Enfermedad encontrada:', enfermedad);
 
-        if (compararAlergia !== '') {
-            return res.status(500).json({ message: 'Tiene alergias al medicamento, cambiar receta' });
+        const porcentajeCoincidencia = compararMedicamentos(medicamentosPrescritos, enfermedad.receta);
+        const alergiasCoincidencias = compararAlergias(alergiasPaciente, medicamentosPrescritos);
+
+        console.log('Porcentaje de coincidencia de medicamentos:', porcentajeCoincidencia);
+        console.log('Coincidencias de alergias:', alergiasCoincidencias);
+
+        // Guardar el porcentaje de coincidencia en el modelo del paciente
+        paciente.porcentajeCoincidencia = porcentajeCoincidencia;
+        await paciente.save();
+
+        if (alergiasCoincidencias) {
+            return res.status(500).json({ success: false, message: `Tiene alergias a los siguientes medicamentos: ${alergiasCoincidencias}. Cambiar receta.` });
         }
 
         return res.status(200).json({
+            success: true,
             diagnostico: diagnostico,
             medicamentosPrescritos: medicamentosPrescritos.map(m => m.charAt(0).toUpperCase() + m.slice(1)),
             medicamentosRecomendados: enfermedad.receta.map(m => m.medicamento),
             porcentajeCoincidencia: porcentajeCoincidencia
         });
     } catch (error) {
-        return res.status(500).json({ message: error.message });
+        console.log('Error:', error.message);
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
+
