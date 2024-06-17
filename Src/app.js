@@ -1,7 +1,6 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
-
 import routes from "./Routes/routes.js";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
@@ -18,7 +17,7 @@ const corsOptions = {
       'https://legendary-faun-c649cc.netlify.app',
       'https://cliente-mini-core.vercel.app',
       'https://adminmapp.onrender.com',
-      
+      'https://cliente-mini-core-az3z.vercel.app'
     ];
     if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
       callback(null, true);
@@ -30,9 +29,9 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express.json());
-app.use(cookieParser());
-app.use(routes);
 app.use(bodyParser.json());
+app.use(cookieParser());
+app.use(express.json());
+app.use(routes);
 
 export default app;
