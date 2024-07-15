@@ -18,7 +18,7 @@ const corsOptions = {
       'https://cliente-mini-core.vercel.app',
       'https://adminmapp.onrender.com',
       'https://cliente-mini-core-az3z.vercel.app',
-      'http://localhost:8081',
+      'http://localhost:8082',
       'http://localhost:4000'
     ];
     if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
