@@ -9,17 +9,17 @@ const app = express();
 
 app.use(morgan('dev'));
 
-// Configura el middleware cors para permitir múltiples orígenes
+// Configura el middleware cors para permitir múltiples orígenes específicos
 const corsOptions = {
-  origin: function(origin, callback) {
+  origin: function (origin, callback) {
     const allowedOrigins = [
       'http://localhost:5173',
       'https://legendary-faun-c649cc.netlify.app',
       'https://cliente-mini-core.vercel.app',
       'https://adminmapp.onrender.com',
       'https://cliente-mini-core-az3z.vercel.app',
-      'http://localhost:8081/'
-      
+      'http://localhost:8081',
+      'http://localhost:4000'
     ];
     if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
       callback(null, true);
