@@ -40,7 +40,7 @@ router.get("/doctors", getDoctor);
 router.get("/doctors/:id", getDoctorId);
 router.delete("/doctors", deleteDoctorEmail);
 router.put("/doctors/:id", updateDoctorId);
-router.delete("/doctors", deleteDoctorId);
+router.delete("/doctors/:id", deleteDoctorId);
 // Ruta protegida
 router.get("/profile", authRequired, profile);
 router.get("/verify", verifyToken);

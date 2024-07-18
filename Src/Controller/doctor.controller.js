@@ -80,7 +80,7 @@ export const logout = async (req, res) => {
 // eliminar doctores por id
 export const deleteDoctorId = async (req, res) => {
     try {
-        const doctorId = req.body.id; // ID del usuario desde el body
+        const doctorId = req.params.id; // ID del doctor desde los parámetros de la URL
         const deletedDoctor = await Doctor.findByIdAndDelete(doctorId);
         if (!deletedDoctor) {
             return res.status(404).json({ message: "Usuario no encontrado" });
@@ -90,6 +90,7 @@ export const deleteDoctorId = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
 
 // eliminar por correo 
 export const deleteDoctorEmail = async (req, res) => {
