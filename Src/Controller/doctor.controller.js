@@ -116,25 +116,20 @@ export const getDoctor = async (req, res) => {
     }
 };
 
-//actualizar los doctores por _id, el password no se podra actualizar y no se debe enviar para actualizar 
+// Actualizar doctores por ID
 export const updateDoctorId = async (req, res) => {
     try {
-        const doctorId = req.body._id; // ID del usuario desde el body
+        const doctorId = req.params.id; // ID del usuario desde la URL
         let doctor = req.body; // Datos del usuario desde el body
 
-        // Verificar si se está actualizando la contraseña
-        if (doctor.password) {
-            // Encriptar la contraseña antes de guardarla en la base de datos
-            doctor.password = await bcrypt.hash(doctor.password, 10); // Se encripta la contraseña usando bcrypt
-        }
+       
 
-        // Verificar si el teléfono, el correo electrónico o el número de matrícula médica ya existen
-        const existingDoctor = await Doctor.findOne({ $or: [{ telefono: doctor.telefono }, { email: doctor.email }, { numeroMatricula: doctor.numeroMatricula }] });
-        if (existingDoctor && existingDoctor._id.toString() !== doctorId) {
-            return res.status(400).json({ message: "El teléfono, el correo electrónico o el número de matrícula médica ya existen" });
-        }
 
-        const updatedDoctor = await Doctor.findByIdAndUpdate(doctorId, doctor, { new: true });
+       
+        // No incluir el campo password en la actualización
+        const { password, ...doctorData } = doctor;
+
+        const updatedDoctor = await Doctor.findByIdAndUpdate(doctorId, doctorData, { new: true });
         if (!updatedDoctor) {
             return res.status(404).json({ message: "Usuario no encontrado" });
         }
