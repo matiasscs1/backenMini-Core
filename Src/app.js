@@ -16,7 +16,7 @@ const corsOptions = {
       'http://localhost:5173',
       'https://legendary-faun-c649cc.netlify.app',
       'https://cliente-mini-core.vercel.app',
-      'https://adminmapp.onrender.com',
+      'https://vue-repo.vercel.app/',
       'https://cliente-mini-core-az3z.vercel.app',
       'http://localhost:8080',
       'http://localhost:8081'
