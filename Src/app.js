@@ -16,14 +16,16 @@ const corsOptions = {
       'http://localhost:5173',
       'https://legendary-faun-c649cc.netlify.app',
       'https://cliente-mini-core.vercel.app',
-      'https://vue-repo.vercel.app/',
+      'https://vue-repo.vercel.app',
       'https://cliente-mini-core-az3z.vercel.app',
       'http://localhost:8080',
       'http://localhost:8081'
     ];
+    console.log('Request Origin:', origin); // Log del origen de la solicitud
     if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
       callback(null, true);
     } else {
+      console.error('Not allowed by CORS:', origin); // Log del error de CORS
       callback(new Error('Not allowed by CORS'));
     }
   },
