@@ -30,7 +30,8 @@ jobs:
       #   run: npm run build
 
       - name: SonarQube Scan
-        uses: sonarsource/sonar-scanner-action@master
+        # **CAMBIO AQUÍ: Usamos una versión específica en lugar de @master**
+        uses: sonarsource/sonar-scanner-action@v2.4.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
@@ -41,4 +42,3 @@ jobs:
       #   timeout-minutes: 5
       #   env:
       #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      #
