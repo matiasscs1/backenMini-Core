@@ -1,0 +1,43 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main # O la rama principal de tu proyecto, como 'master'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+
+      # Paso para configurar Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # Puedes cambiar esto a la versión de Node.js que uses (ej. '16', '20')
+
+      # Paso para instalar las dependencias
+      - name: Install dependencies
+        run: npm install # O 'yarn install' si usas yarn
+
+      # Si tienes scripts de build o test que son necesarios antes del análisis, agrégalos aquí.
+      # Por ejemplo, si el análisis de SonarQube requiere que la aplicación esté compilada:
+      # - name: Run build script
+      #   run: npm run build
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonar-scanner-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      # Si deseas que tu trabajo falle cuando el Quality Gate esté en rojo,
+      # descomenta las siguientes líneas. Esto se usaría típicamente para fallar un despliegue.
+      # - uses: sonarsource/sonarcloud-quality-gate-action@master
+      #   timeout-minutes: 5
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

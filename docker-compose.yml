@@ -1,32 +1,33 @@
-version: "3"
 services:
-  sonarqube:
+  sonarqube_backend_mini_core: # Nombre nuevo para el servicio SonarQube
     image: sonarqube:lts-community
-    container_name: sonarqube
+    container_name: sonarqube_backend_mini_core # Nombre nuevo para el contenedor
     ports:
-      - "9000:9000"
+      - "9000:9000" # Importante: Asegúrate de que este puerto 9000 no esté siendo usado por el otro SonarQube.
+                   # Si lo está, deberás cambiarlo aquí a un puerto diferente (ej. "9001:9000")
       - "9092:9092"
     environment:
-      - SONAR_JDBC_URL=jdbc:postgresql://db:5432/sonar
+      - SONAR_JDBC_URL=jdbc:postgresql://db_backend_mini_core:5432/sonar # Apunta al nuevo nombre del servicio DB
       - SONAR_JDBC_USERNAME=sonar
       - SONAR_JDBC_PASSWORD=sonar
     volumes:
-      - sonarqube_data:/opt/sonarqube/data
-      - sonarqube_extensions:/opt/sonarqube/extensions
-      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_data_backend_mini_core:/opt/sonarqube/data      # Volúmenes con nombres únicos
+      - sonarqube_extensions_backend_mini_core:/opt/sonarqube/extensions
+      - sonarqube_logs_backend_mini_core:/opt/sonarqube/logs
     depends_on:
-      - db
-  db:
+      - db_backend_mini_core # Depende del nuevo nombre del servicio DB
+  db_backend_mini_core: # Nombre nuevo para el servicio de base de datos
     image: postgres:13
-    container_name: sonarqube_db
+    container_name: sonarqube_db_backend_mini_core # Nombre nuevo para el contenedor de base de datos
     environment:
       - POSTGRES_USER=sonar
       - POSTGRES_PASSWORD=sonar
       - POSTGRES_DB=sonar
     volumes:
-      - postgresql_data:/var/lib/postgresql/data
+      - postgresql_data_backend_mini_core:/var/lib/postgresql/data # Volúmenes con nombres únicos
+
 volumes:
-  sonarqube_data:
-  sonarqube_extensions:
-  sonarqube_logs:
-  postgresql_data:
+  sonarqube_data_backend_mini_core:
+  sonarqube_extensions_backend_mini_core:
+  sonarqube_logs_backend_mini_core:
+  postgresql_data_backend_mini_core:
