@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 async function connectDB() {
   console.log('Connecting to MongoDB');
   try {
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://matiaz490:1234@cluster0.jshz0m1.mongodb.net/medicaApp', {
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://matiaz490:1234@terranovaconect.m881eys.mongodb.net/MiniCore?retryWrites=true&w=majority&appName=terranovaConect', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
