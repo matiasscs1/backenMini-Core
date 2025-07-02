@@ -54,7 +54,7 @@ export const updatePacienteById = async (req, res) => {
         const pacienteId = req.params.id;
         const updatedPaciente = req.body;
 
-        // Verificar si la cédula ya existe en la base de datos
+        // Verificar cédula
         if (updatedPaciente.cedula) {
             const existingPacienteCedula = await Paciente.findOne({ cedula: updatedPaciente.cedula });
             if (existingPacienteCedula && existingPacienteCedula._id.toString() !== pacienteId) {
@@ -62,7 +62,7 @@ export const updatePacienteById = async (req, res) => {
             }
         }
 
-        // Verificar si el email ya existe en la base de datos
+        // Verificar email
         if (updatedPaciente.email) {
             const existingPacienteEmail = await Paciente.findOne({ email: updatedPaciente.email });
             if (existingPacienteEmail && existingPacienteEmail._id.toString() !== pacienteId) {
@@ -70,7 +70,7 @@ export const updatePacienteById = async (req, res) => {
             }
         }
 
-        // Actualizar los campos de sintomas y alergias si existen
+        // Actualizar arrays
         if (updatedPaciente.sintomas) {
             updatedPaciente.sintomas = Array.isArray(updatedPaciente.sintomas) ? updatedPaciente.sintomas : [updatedPaciente.sintomas];
         }
@@ -85,7 +85,8 @@ export const updatePacienteById = async (req, res) => {
         }
         res.status(200).json(paciente);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error("Error en updatePacienteById:", error); // Log para debug
+        res.status(500).json({ message: "Error de servidor" }); // Mensaje consistente
     }
 };
 
