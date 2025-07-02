@@ -5,6 +5,7 @@ on:
       - main
   pull_request:
     types: [opened, synchronize, reopened]
+
 jobs:
   sonarqube:
     name: SonarQube
@@ -12,8 +13,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0
+
+      # Configura Node.js (si es proyecto JS/TS)
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18  # Usa la versión de Node.js de tu proyecto
+
+      # Instala dependencias y ejecuta tests con cobertura
+      - name: Install dependencies & run tests
+        run: |
+          npm install
+          npm test -- --coverage  # Para Jest (genera lcov.info)
+          # O si usas Mocha: 
+          # npx nyc --reporter=lcov mocha "test/**/*.js"
+
+      # Escaneo con SonarQube (incluyendo tests y cobertura)
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.tests=test
+            -Dsonar.test.inclusions=test/**/*.test.js
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
