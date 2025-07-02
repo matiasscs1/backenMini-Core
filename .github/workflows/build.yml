@@ -40,7 +40,4 @@ jobs:
           # SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           args: >
-            # Las propiedades sonar.tests y sonar.test.inclusions ahora se leen
-            # directamente de sonar-project.properties.
-            # Solo pasamos la ruta del informe de cobertura aquí si no está en sonar-project.properties.
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
