@@ -25,8 +25,8 @@ jobs:
       - name: Install dependencies & run tests
         run: |
           npm install
-          npm test -- --coverage  # Para Jest (genera lcov.info)
-          # O si usas Mocha: 
+          npm test -- --coverage  # Esto genera el archivo coverage/lcov.info necesario
+          # Si usas Mocha y nyc, la línea sería:
           # npx nyc --reporter=lcov mocha "test/**/*.js"
 
       # Escaneo con SonarQube (incluyendo tests y cobertura)
@@ -34,8 +34,13 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          # Si usas SonarCloud, generalmente no necesitas SONAR_HOST_URL.
+          # Si usas un SonarQube self-hosted, descomenta la línea de abajo
+          # y asegúrate de que el secreto SONAR_HOST_URL esté configurado.
+          # SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           args: >
-            -Dsonar.tests=test
-            -Dsonar.test.inclusions=test/**/*.test.js
+            # Las propiedades sonar.tests y sonar.test.inclusions ahora se leen
+            # directamente de sonar-project.properties.
+            # Solo pasamos la ruta del informe de cobertura aquí si no está en sonar-project.properties.
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
