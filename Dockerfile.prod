@@ -1,22 +1,57 @@
-FROM node:18-alpine
+# Dockerfile.prod - Versión segura DevSecOps
+FROM node:18-alpine AS builder
 
-# Crear usuario no-root para seguridad
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nodejs -u 1001
+# Metadata de seguridad
+LABEL maintainer="tu-email@empresa.com"
+LABEL security.scan="enabled"
+LABEL version="1.0.0"
+
+# Actualizar sistema operativo
+RUN apk update && apk upgrade && apk add --no-cache dumb-init
 
 WORKDIR /app
 
 # Copiar archivos de dependencias
 COPY package*.json ./
 
-# Instalar dependencias de producción
-RUN npm ci --only=production
+# Instalar dependencias de producción solamente
+RUN npm ci --only=production --no-audit --no-fund
+
+# Auditar dependencias
+RUN npm audit --audit-level=high --production
 
 # Copiar código fuente
 COPY src ./src
 
+# Etapa de producción
+FROM node:18-alpine AS production
+
+# Instalar dumb-init para manejo seguro de procesos
+RUN apk add --no-cache dumb-init
+
+# Crear usuario no-root
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Crear directorio de aplicación
+WORKDIR /app
+
+# Copiar archivos necesarios como usuario nodejs
+COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nodejs:nodejs /app/package.json ./
+COPY --chown=nodejs:nodejs src ./src
+
 # Crear directorios necesarios
-RUN mkdir -p logs && chown -R nodejs:nodejs logs
+RUN mkdir -p logs tmp && \
+    chown -R nodejs:nodejs logs tmp
+
+# Configurar permisos seguros
+RUN chmod -R 755 /app && \
+    chmod -R 644 /app/src && \
+    chmod 755 /app/src
+
+# Remover herramientas innecesarias por seguridad
+RUN rm -rf /tmp/* /var/cache/apk/* /root/.npm
 
 # Cambiar a usuario no-root
 USER nodejs
@@ -26,11 +61,16 @@ EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/health || exit 1
+    CMD curl -f http://localhost:3000/health || exit 1
 
-# Variables de entorno
+# Variables de entorno de seguridad
 ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=512"
+ENV NPM_CONFIG_LOGLEVEL=warn
 ENV PORT=3000
+
+# Usar dumb-init para manejo seguro de procesos
+ENTRYPOINT ["dumb-init", "--"]
 
 # Comando para ejecutar la aplicación
 CMD ["node", "src/index.js"]

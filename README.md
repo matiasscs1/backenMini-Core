@@ -41,3 +41,11 @@ Integridad de Artefactos:
 - ./deploy-production.sh
 - docker-compose -f docker-compose.prod.yml down
 
+- ver produccion en github actions
+- 🏗️ Build production image:
+- 🔒 Generate production integrity hash:
+- 🛡️ Production security scan:
+- 🚀 Start production environment:
+- 🔍 Production health check:
+- ⚡ Production performance test:
+- 🎉 Display production deployment info:
