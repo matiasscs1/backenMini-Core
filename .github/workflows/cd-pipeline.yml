@@ -1,4 +1,4 @@
-name: DevSecOps Pipeline (No External Tokens)
+name: DevSecOps Pipeline (Fixed)
 
 on:
   push:
@@ -128,12 +128,12 @@ jobs:
           exit-code: '0'
           severity: 'CRITICAL,HIGH'
 
-      # Análisis de Dockerfile
+      # Análisis de Dockerfile con threshold corregido
       - name: Dockerfile Security Analysis
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: Dockerfile.prod
-          failure-threshold: warning
+          failure-threshold: error
 
       # Verificación de configuración Docker
       - name: Docker Configuration Check
@@ -283,7 +283,7 @@ jobs:
           echo "✅ Reporte de seguridad generado"
 
       - name: Upload Security Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: security-report
           path: security-report.json
