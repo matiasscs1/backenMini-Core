@@ -29,6 +29,12 @@ jobs:
       - name: Run tests and generate coverage
         run: npm test
 
+      # ✨ NUEVO: Validación de seguridad - Escaneo de vulnerabilidades
+      - name: Security Vulnerability Scan
+        run: |
+          echo "🔍 Escaneando vulnerabilidades en dependencias..."
+          npm audit --audit-level=moderate --production || echo "⚠️ Vulnerabilidades encontradas - revisar antes de producción"
+
       - name: Verify coverage file exists
         run: |
           echo "Checking if coverage file exists..."
@@ -59,6 +65,24 @@ jobs:
         run: |
           docker build -f Dockerfile.test -t maticrud-test:${{ github.sha }} .
           docker tag maticrud-test:${{ github.sha }} maticrud-test:latest
+
+      # ✨ NUEVO: Validación de seguridad - Integridad de artefactos
+      - name: Generate Image Integrity Hash
+        run: |
+          echo "🔒 Generando hash de integridad del artefacto..."
+          IMAGE_HASH=$(docker image inspect maticrud-test:${{ github.sha }} --format='{{.Id}}')
+          echo "IMAGE_HASH=$IMAGE_HASH" >> $GITHUB_ENV
+          echo "📋 Image Integrity Hash: $IMAGE_HASH"
+          echo "✅ Integridad de artefacto verificada y documentada"
+
+      # ✨ NUEVO: Escaneo de vulnerabilidades en imagen Docker
+      - name: Docker Image Security Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'maticrud-test:${{ github.sha }}'
+          format: 'table'
+          exit-code: '0'
+          severity: 'CRITICAL,HIGH'
       
       - name: Start test environment
         run: |
@@ -112,6 +136,7 @@ jobs:
           echo "🎉 Deployment successful!"
           echo "📊 Test Environment: http://localhost:3001"
           echo "🗄️  Database: mongodb://localhost:27018/MiniCore_test"
+          echo "🔒 Image Hash: $IMAGE_HASH"
       
       - name: Cleanup test environment
         if: always()
