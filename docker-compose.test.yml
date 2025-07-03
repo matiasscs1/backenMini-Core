@@ -1,0 +1,40 @@
+# docker-compose.test.yml
+version: '3.8'
+
+services:
+  maticrud-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=test
+      - PORT=3001
+      - MONGO_URI=mongodb://mongo-test:27017/MiniCore_test
+    depends_on:
+      - mongo-test
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - test-network
+    restart: unless-stopped
+
+  mongo-test:
+    image: mongo:6.0
+    ports:
+      - "27018:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=MiniCore_test
+    volumes:
+      - mongo_test_data:/data/db
+    networks:
+      - test-network
+    restart: unless-stopped
+
+volumes:
+  mongo_test_data:
+
+networks:
+  test-network:
+    driver: bridge

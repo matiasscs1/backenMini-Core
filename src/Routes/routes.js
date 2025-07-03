@@ -13,6 +13,15 @@ router.get('/', (req, res) => {
   res.send('bienvenido API');
 });
 
+router.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 router.get("/user", getPacientes);
 router.post("/user", createPaciente);
 router.put("/user/:id", updatePacienteById);

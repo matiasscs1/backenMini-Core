@@ -8,7 +8,13 @@
     "dev": "nodemon src/index.js",
     "build": "echo 'No build step defined'",
     "start": "node src/index.js",
-    "test": "jest --coverage --collectCoverage=true"
+    "test": "jest --coverage --collectCoverage=true",
+    "test:build": "docker build -f Dockerfile.test -t maticrud-test .",
+    "test:up": "docker-compose -f docker-compose.test.yml up -d",
+    "test:down": "docker-compose -f docker-compose.test.yml down",
+    "test:restart": "docker-compose -f docker-compose.test.yml restart maticrud-test",
+    "test:logs": "docker-compose -f docker-compose.test.yml logs -f maticrud-test",
+    "test:deploy": "bash deploy-test.sh"
   },
   "keywords": [],
   "author": "",

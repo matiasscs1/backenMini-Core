@@ -1,0 +1,30 @@
+# Dockerfile.test
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copiar archivos de dependencias
+COPY package*.json ./
+
+# Instalar dependencias
+RUN npm ci --only=production
+
+# Copiar código fuente
+COPY src ./src
+
+# Copiar archivos de configuración solo si existen
+COPY babel.config.js* ./
+COPY .gitignore* ./
+
+# Crear directorio para logs si es necesario
+RUN mkdir -p logs
+
+# Exponer puerto para testing
+EXPOSE 3001
+
+# Variables de entorno por defecto para testing
+ENV NODE_ENV=test
+ENV PORT=3001
+
+# Comando para ejecutar la aplicación
+CMD ["npm", "start"]
