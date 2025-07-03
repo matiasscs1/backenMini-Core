@@ -1,0 +1,39 @@
+services:
+  # Aplicación principal en producción
+  maticrud-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    ports:
+      - "3002:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MONGO_URI=mongodb://mongo-prod:27017/MiniCore_prod
+    depends_on:
+      - mongo-prod
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - prod-network
+    restart: unless-stopped
+
+  # Base de datos de producción
+  mongo-prod:
+    image: mongo:6.0
+    ports:
+      - "27019:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=MiniCore_prod
+    volumes:
+      - mongo_prod_data:/data/db
+    networks:
+      - prod-network
+    restart: unless-stopped
+
+volumes:
+  mongo_prod_data:
+
+networks:
+  prod-network:
+    driver: bridge

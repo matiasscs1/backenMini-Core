@@ -14,7 +14,17 @@
     "test:down": "docker-compose -f docker-compose.test.yml down",
     "test:restart": "docker-compose -f docker-compose.test.yml restart maticrud-test",
     "test:logs": "docker-compose -f docker-compose.test.yml logs -f maticrud-test",
-    "test:deploy": "bash deploy-test.sh"
+    "test:deploy": "bash deploy-test.sh",
+    "prod:build": "docker build -f Dockerfile.prod -t maticrud-prod .",
+    "prod:up": "docker-compose -f docker-compose.prod.yml up -d",
+    "prod:down": "docker-compose -f docker-compose.prod.yml down",
+    "prod:restart": "docker-compose -f docker-compose.prod.yml restart maticrud-prod",
+    "prod:logs": "docker-compose -f docker-compose.prod.yml logs -f maticrud-prod",
+    "prod:deploy": "bash deploy-production.sh",
+    "health:test": "curl -f http://localhost:3001/health",
+    "health:prod": "curl -f http://localhost:3002/health",
+    "security:audit": "npm audit --audit-level=moderate",
+    "security:fix": "npm audit fix"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +37,7 @@
     "dotenv": "^17.0.1",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.20",
     "mongoose": "^7.0.0",
     "morgan": "^1.10.0"
   },
@@ -40,9 +51,15 @@
   },
   "jest": {
     "collectCoverage": true,
-    "coverageReporters": ["lcov", "text", "clover"],
+    "coverageReporters": [
+      "lcov",
+      "text",
+      "clover"
+    ],
     "coverageDirectory": "coverage",
-    "testMatch": ["**/test/**/*.test.js"],
+    "testMatch": [
+      "**/test/**/*.test.js"
+    ],
     "coveragePathIgnorePatterns": [
       "/node_modules/",
       "/test/",

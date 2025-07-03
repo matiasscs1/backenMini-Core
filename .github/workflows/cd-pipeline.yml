@@ -154,3 +154,162 @@ jobs:
             echo "❌ Test deployment failed"
             exit 1
           fi
+
+  # 🆕 NUEVO JOB: Despliegue en entorno de producción simulado
+  deploy-production:
+    name: Deploy to Production Environment
+    runs-on: ubuntu-latest
+    needs: [sonarcloud, deploy-test]  # Se ejecuta después de testing
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production  # Requiere aprobación manual
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build production image
+        run: |
+          echo "🏗️ Construyendo imagen de producción..."
+          docker build -f Dockerfile.prod -t maticrud-prod:${{ github.sha }} .
+          docker tag maticrud-prod:${{ github.sha }} maticrud-prod:latest
+      
+      - name: Generate production integrity hash
+        run: |
+          echo "🔒 Generando hash de integridad para producción..."
+          PROD_HASH=$(docker image inspect maticrud-prod:${{ github.sha }} --format='{{.Id}}')
+          echo "PROD_HASH=$PROD_HASH" >> $GITHUB_ENV
+          echo "📋 Production Image Hash: $PROD_HASH"
+      
+      - name: Production security scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'maticrud-prod:${{ github.sha }}'
+          format: 'table'
+          exit-code: '0'
+          severity: 'CRITICAL,HIGH'
+      
+      - name: Start production environment
+        run: |
+          echo "🚀 Iniciando entorno de producción..."
+          docker compose -f docker-compose.prod.yml up -d
+          echo "⏳ Esperando a que los servicios estén listos..."
+          sleep 45
+      
+      - name: Check production containers status
+        run: |
+          echo "📋 Estado de contenedores de producción:"
+          docker compose -f docker-compose.prod.yml ps
+          echo "📋 Logs de producción:"
+          docker compose -f docker-compose.prod.yml logs --tail=20
+      
+      - name: Production health check
+        run: |
+          echo "🔍 Ejecutando health check de producción..."
+          max_attempts=15
+          attempt=1
+          
+          while [ $attempt -le $max_attempts ]; do
+            if curl -f http://localhost:3002/health 2>/dev/null; then
+              echo "✅ Health check de producción exitoso!"
+              break
+            else
+              echo "⏳ Intento $attempt/$max_attempts fallido, reintentando en 10s..."
+              sleep 10
+              ((attempt++))
+            fi
+          done
+          
+          if [ $attempt -gt $max_attempts ]; then
+            echo "❌ Health check de producción falló"
+            echo "📋 Logs finales:"
+            docker compose -f docker-compose.prod.yml logs maticrud-prod
+            exit 1
+          fi
+      
+      - name: Production smoke tests
+        run: |
+          echo "🧪 Ejecutando pruebas de smoke testing en producción..."
+          
+          # Verificar endpoints principales
+          curl -f http://localhost:3002/health
+          curl -f http://localhost:3002/
+          
+          # Verificar que la API responde
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3002/user)
+          if [ $response -eq 200 ] || [ $response -eq 401 ]; then
+            echo "✅ API endpoints respondiendo correctamente"
+          else
+            echo "❌ API endpoints no responden correctamente (status: $response)"
+            exit 1
+          fi
+          
+          echo "✅ Smoke tests de producción completados!"
+      
+      - name: Production performance test
+        run: |
+          echo "⚡ Ejecutando prueba de rendimiento básica..."
+          
+          # Medir tiempo de respuesta
+          start_time=$(date +%s%N)
+          curl -f http://localhost:3002/health > /dev/null
+          end_time=$(date +%s%N)
+          
+          response_time=$((($end_time - $start_time) / 1000000))
+          echo "⏱️ Tiempo de respuesta: ${response_time}ms"
+          
+          if [ $response_time -lt 2000 ]; then
+            echo "✅ Rendimiento dentro del rango aceptable"
+          else
+            echo "⚠️ Advertencia: Tiempo de respuesta alto"
+          fi
+      
+      - name: Production security validation
+        run: |
+          echo "🛡️ Validando seguridad en producción..."
+          
+          # Verificar que no hay puertos inseguros
+          if docker compose -f docker-compose.prod.yml ps | grep -q "22/tcp\|23/tcp\|21/tcp"; then
+            echo "❌ Puertos inseguros detectados"
+            exit 1
+          fi
+          
+          # Verificar headers de respuesta
+          headers=$(curl -s -I http://localhost:3002/health)
+          if echo "$headers" | grep -q "X-Powered-By"; then
+            echo "⚠️ Advertencia: Header X-Powered-By expuesto"
+          fi
+          
+          echo "✅ Validaciones de seguridad completadas"
+      
+      - name: Display production deployment info
+        run: |
+          echo "🎉 ¡Despliegue de producción completado exitosamente!"
+          echo "=================================================="
+          echo "🌐 Producción: http://localhost:3002"
+          echo "🔍 Health Check: http://localhost:3002/health"
+          echo "🗄️ MongoDB: mongodb://localhost:27019/MiniCore_prod"
+          echo "🔒 Image Hash: $PROD_HASH"
+          echo ""
+          echo "📊 Resumen de entornos:"
+          echo "  🧪 Testing: http://localhost:3001"
+          echo "  🏭 Production: http://localhost:3002"
+      
+      - name: Cleanup production environment
+        if: always()
+        run: |
+          echo "🧹 Limpiando entorno de producción..."
+          docker compose -f docker-compose.prod.yml down --volumes
+          echo "✅ Limpieza completada"
+      
+      - name: Notify production deployment status
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ Despliegue de producción completado exitosamente"
+            echo "🎯 Listo para despliegue en producción real"
+          else
+            echo "❌ Despliegue de producción falló"
+            exit 1
+          fi
