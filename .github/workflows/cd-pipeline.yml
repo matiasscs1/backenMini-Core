@@ -63,9 +63,16 @@ jobs:
       - name: Start test environment
         run: |
           echo "🚀 Starting test environment..."
-          docker-compose -f docker-compose.test.yml up -d
+          docker compose -f docker-compose.test.yml up -d
           echo "⏳ Waiting for services to be ready..."
           sleep 30
+      
+      - name: Check containers status
+        run: |
+          echo "📋 Container status:"
+          docker compose -f docker-compose.test.yml ps
+          echo "📋 Container logs:"
+          docker compose -f docker-compose.test.yml logs
       
       - name: Health check
         run: |
@@ -86,14 +93,18 @@ jobs:
           
           if [ $attempt -gt $max_attempts ]; then
             echo "❌ Health check failed after $max_attempts attempts"
+            echo "📋 Final container logs:"
+            docker compose -f docker-compose.test.yml logs
             exit 1
           fi
       
       - name: Run integration tests
         run: |
           echo "🧪 Running integration tests..."
-          # Aquí puedes agregar tus tests de integración
+          # Verificar endpoint principal
           curl -f http://localhost:3001/health
+          # Verificar endpoint de bienvenida
+          curl -f http://localhost:3001/
           echo "✅ Integration tests passed!"
       
       - name: Display deployment info
@@ -101,14 +112,13 @@ jobs:
           echo "🎉 Deployment successful!"
           echo "📊 Test Environment: http://localhost:3001"
           echo "🗄️  Database: mongodb://localhost:27018/MiniCore_test"
-          echo "📋 Logs: docker-compose -f docker-compose.test.yml logs -f maticrud-test"
       
       - name: Cleanup test environment
         if: always()
         run: |
           echo "🧹 Cleaning up test environment..."
-          docker-compose -f docker-compose.test.yml down
-          docker-compose -f docker-compose.test.yml down --volumes
+          docker compose -f docker-compose.test.yml down
+          docker compose -f docker-compose.test.yml down --volumes
       
       - name: Notify deployment status
         if: always()
@@ -119,22 +129,3 @@ jobs:
             echo "❌ Test deployment failed"
             exit 1
           fi
-
-  # OPCIONAL: Job para despliegue a producción
-  deploy-production:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: [sonarcloud, deploy-test]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    # Requiere aprobación manual para producción
-    environment: production
-    
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Deploy to production
-        run: |
-          echo "🚀 Deploying to production..."
-          # Aquí agregar tu lógica de despliegue a producción
-          # Por ejemplo: Heroku, AWS, Digital Ocean, etc.
-          echo "🎉 Production deployment completed!"
