@@ -1,5 +1,5 @@
 TN:
-SF:Src\config.js
+SF:src\config.js
 FNF:0
 FNH:0
 DA:1,2
@@ -9,7 +9,7 @@ BRF:0
 BRH:0
 end_of_record
 TN:
-SF:Src\Controller\Recetas.diagnostico.js
+SF:src\Controller\Recetas.diagnostico.js
 FN:183,(anonymous_0)
 FN:184,(anonymous_1)
 FN:185,(anonymous_2)
@@ -110,7 +110,7 @@ BRF:14
 BRH:14
 end_of_record
 TN:
-SF:Src\Controller\doctor.controller.js
+SF:src\Controller\doctor.controller.js
 FN:8,(anonymous_0)
 FN:40,(anonymous_1)
 FN:72,(anonymous_2)
@@ -246,7 +246,7 @@ BRF:22
 BRH:22
 end_of_record
 TN:
-SF:Src\Controller\reglas.diagnostico.js
+SF:src\Controller\reglas.diagnostico.js
 FN:340,(anonymous_0)
 FN:375,(anonymous_1)
 FNF:2
@@ -297,7 +297,7 @@ BRF:8
 BRH:7
 end_of_record
 TN:
-SF:Src\Controller\signos_vitales.controller.js
+SF:src\Controller\signos_vitales.controller.js
 FN:5,(anonymous_0)
 FN:28,(anonymous_1)
 FN:55,getSignosVitalesIdDiagnostico
@@ -371,7 +371,7 @@ BRF:22
 BRH:22
 end_of_record
 TN:
-SF:Src\Controller\user.controller.js
+SF:src\Controller\user.controller.js
 FN:7,(anonymous_0)
 FN:32,(anonymous_1)
 FN:42,(anonymous_2)
@@ -564,7 +564,7 @@ BRF:56
 BRH:50
 end_of_record
 TN:
-SF:Src\Model\doctor.user.js
+SF:src\Model\doctor.user.js
 FNF:0
 FNH:0
 DA:3,1
@@ -574,7 +574,7 @@ BRF:0
 BRH:0
 end_of_record
 TN:
-SF:Src\Model\signos_vitales.model.js
+SF:src\Model\signos_vitales.model.js
 FNF:0
 FNH:0
 DA:4,2
@@ -584,7 +584,7 @@ BRF:0
 BRH:0
 end_of_record
 TN:
-SF:Src\Model\user.model.js
+SF:src\Model\user.model.js
 FN:2,(anonymous_0)
 FN:63,(anonymous_1)
 FNF:2
@@ -605,7 +605,7 @@ BRF:0
 BRH:0
 end_of_record
 TN:
-SF:Src\libs\jwt.js
+SF:src\libs\jwt.js
 FN:3,createAcessToken
 FN:4,(anonymous_1)
 FN:11,(anonymous_2)
