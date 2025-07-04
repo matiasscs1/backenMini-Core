@@ -165,7 +165,7 @@ jobs:
       - name: Policy as Code Validation
         run: |
           echo "🔒 Validando políticas de despliegue..."
-          
+
           # Crear archivo de políticas
           cat > deployment-policies.json << EOF
           {
@@ -204,28 +204,28 @@ jobs:
             }
           }
           EOF
-          
+
           echo "✅ Políticas de despliegue definidas"
 
       - name: Vulnerability Threshold Validation
         run: |
           echo "🔍 Validando umbrales de vulnerabilidades..."
-          
+
           # Simular obtención de vulnerabilidades reales
           CRITICAL_COUNT=0
           HIGH_COUNT=4
           MEDIUM_COUNT=5
-          
+
           # Políticas definidas
           MAX_CRITICAL=0
           MAX_HIGH=5
           MAX_MEDIUM=10
-          
+
           echo "Vulnerabilidades encontradas:"
           echo "  CRITICAL: $CRITICAL_COUNT (máximo permitido: $MAX_CRITICAL)"
           echo "  HIGH: $HIGH_COUNT (máximo permitido: $MAX_HIGH)"
           echo "  MEDIUM: $MEDIUM_COUNT (máximo permitido: $MAX_MEDIUM)"
-          
+
           # Validar umbrales
           if [ $CRITICAL_COUNT -gt $MAX_CRITICAL ]; then
             echo "❌ POLÍTICA VIOLADA: Vulnerabilidades críticas exceden el umbral"
@@ -243,7 +243,7 @@ jobs:
       - name: Compliance Policy Check
         run: |
           echo "📋 Verificando compliance con políticas..."
-          
+
           # Verificar compliance OWASP Top 10
           echo "Verificando OWASP Top 10..."
           OWASP_COMPLIANCE=true
@@ -253,7 +253,7 @@ jobs:
             echo "❌ OWASP Top 10 compliance: FAILED"
             exit 1
           fi
-          
+
           # Verificar NIST Framework
           echo "Verificando NIST Framework..."
           NIST_COMPLIANCE=true
@@ -263,7 +263,7 @@ jobs:
             echo "❌ NIST Framework compliance: FAILED"
             exit 1
           fi
-          
+
           # Verificar Docker Security
           echo "Verificando Docker Security..."
           DOCKER_COMPLIANCE=true
@@ -277,12 +277,12 @@ jobs:
       - name: Deployment Gates Validation
         run: |
           echo "🚪 Validando gates de despliegue..."
-          
+
           # Gate 1: Security Scan Required - Verificar que los jobs previos pasaron
           echo "Verificando Gate 1: Security scan completed..."
           # Como este job depende de container-security, significa que security-scan y build-analyze ya pasaron
           echo "✅ Gate 1: Security scan completed (jobs previos exitosos)"
-          
+
           # Gate 2: No critical vulnerabilities - Simular verificación
           CRITICAL_VULNS=0  # En un escenario real, esto vendría del npm audit
           if [ $CRITICAL_VULNS -eq 0 ]; then
@@ -291,7 +291,7 @@ jobs:
             echo "❌ Gate 2: Critical vulnerabilities found"
             exit 1
           fi
-          
+
           # Gate 3: Code coverage threshold - Simular verificación  
           COVERAGE_THRESHOLD=70
           CURRENT_COVERAGE=85  # En un escenario real, esto vendría de los tests
@@ -301,25 +301,25 @@ jobs:
             echo "❌ Gate 3: Code coverage below threshold"
             exit 1
           fi
-          
+
           # Gate 4: Container security validated
           echo "Verificando Gate 4: Container security..."
           # Como dependemos de container-security, sabemos que pasó
           echo "✅ Gate 4: Container security scan completed"
-          
+
           # Gate 5: Static analysis passed
           echo "Verificando Gate 5: Static analysis..."
           # Como dependemos de build-analyze, sabemos que SonarCloud pasó
           echo "✅ Gate 5: Static analysis (SonarCloud) passed"
-          
+
           echo "✅ Todos los deployment gates pasaron"
 
       - name: Environment Policy Enforcement
         run: |
           echo "🌍 Aplicando políticas por entorno..."
-          
+
           ENVIRONMENT="production"
-          
+
           if [ "$ENVIRONMENT" = "production" ]; then
             echo "Aplicando políticas de producción:"
             echo "✅ Approval required: Configurado en GitHub"
@@ -327,13 +327,13 @@ jobs:
             echo "✅ Backup strategy: Implementado"
             echo "✅ Rollback plan: Disponible"
           fi
-          
+
           echo "✅ Políticas de entorno aplicadas correctamente"
 
       - name: Generate Policy Compliance Report
         run: |
           echo "📊 Generando reporte de compliance..."
-          
+
           cat > policy-compliance-report.json << EOF
           {
             "policy_validation": {
@@ -375,7 +375,7 @@ jobs:
             }
           }
           EOF
-          
+
           echo "✅ Reporte de compliance generado"
 
   # 4. DEPLOY TEST - Con validaciones de seguridad
@@ -403,7 +403,7 @@ jobs:
         run: |
           echo "🔍 Verificando seguridad en runtime..."
           # Verificar headers de seguridad
-          RESPONSE=$(curl -s -I http://localhost:3001/health || echo "No response")
+          RESPONSE=$(curl -s -I http://localhost:3000/health || echo "No response")
           if echo "$RESPONSE" | grep -i "x-powered-by"; then
             echo "⚠️ Header X-Powered-By expuesto"
           else
@@ -411,7 +411,7 @@ jobs:
           fi
 
           # Verificar endpoint de salud
-          HEALTH_DATA=$(curl -s http://localhost:3001/health || echo "{}")
+          HEALTH_DATA=$(curl -s http://localhost:3000/health || echo "{}")
           if echo "$HEALTH_DATA" | grep -i "password\|secret\|token"; then
             echo "❌ Información sensible en endpoint de salud"
             exit 1
@@ -423,10 +423,10 @@ jobs:
         run: |
           echo "🧪 Ejecutando pruebas básicas de seguridad..."
           # Test de inyección SQL básica
-          curl -f "http://localhost:3001/health?test='; DROP TABLE users; --" || echo "SQL injection test completed"
+          curl -f "http://localhost:3000/health?test='; DROP TABLE users; --" || echo "SQL injection test completed"
 
           # Test de XSS básico
-          curl -f "http://localhost:3001/health?test=<script>alert('xss')</script>" || echo "XSS test completed"
+          curl -f "http://localhost:3000/health?test=<script>alert('xss')</script>" || echo "XSS test completed"
 
           echo "✅ Pruebas básicas completadas"
 
@@ -848,8 +848,6 @@ jobs:
           EOF
 
           echo "✅ Dashboard HTML generado"
-      
-          
 
       - name: Upload Enhanced Security Reports
         uses: actions/upload-artifact@v4
@@ -862,10 +860,9 @@ jobs:
       - name: Cleanup production environment
         if: always()
         run: docker compose -f docker-compose.prod.yml down --volumes
-     
-     # JOB ADICIONAL: Monitoreo Post-Despliegue
-  post-deployment-monitoring:
 
+      # JOB ADICIONAL: Monitoreo Post-Despliegue
+  post-deployment-monitoring:
     name: Post-Deployment Security Monitoring
     runs-on: ubuntu-latest
     needs: [deploy-production-secure, deployment-policy-validation]
@@ -876,27 +873,27 @@ jobs:
       - name: Setup Monitoring Tools
         run: |
           echo "🔧 Configurando herramientas de monitoreo..."
-          
+
           # Instalar herramientas de monitoreo
           sudo apt-get update
           sudo apt-get install -y curl jq netcat-openbsd
-          
+
           echo "✅ Herramientas de monitoreo instaladas"
 
       - name: Deploy Monitoring Infrastructure
         run: |
           echo "📊 Desplegando infraestructura de monitoreo..."
-          
+
           # Crear configuración de monitoreo
           cat > monitoring-config.yml << EOF
           monitoring:
             endpoints:
               - name: "health"
-                url: "http://localhost:3001/health"
+                url: "http://localhost:3000/health"
                 interval: "30s"
                 timeout: "10s"
               - name: "api"
-                url: "http://localhost:3001/"
+                url: "http://localhost:3000/"
                 interval: "60s"
                 timeout: "15s"
             security_checks:
@@ -917,13 +914,13 @@ jobs:
               - condition: "security_header_missing"
                 severity: "high"
           EOF
-          
+
           echo "✅ Configuración de monitoreo creada"
 
       - name: Initialize Security Monitoring
         run: |
           echo "🛡️ Inicializando monitoreo de seguridad..."
-          
+
           # Configurar baseline de seguridad
           cat > security-baseline.json << EOF
           {
@@ -950,13 +947,13 @@ jobs:
             }
           }
           EOF
-          
+
           echo "✅ Baseline de seguridad establecido"
 
       - name: Real-time Security Monitoring
         run: |
           echo "📡 Iniciando monitoreo en tiempo real..."
-          
+
           # Función de monitoreo
           monitor_endpoint() {
             local url=$1
@@ -992,31 +989,31 @@ jobs:
               return 1
             fi
           }
-          
+
           # Simular monitoreo (en producción real sería continuo)
           echo "Simulando monitoreo continuo por 2 minutos..."
           for i in {1..4}; do
             echo "--- Ciclo de monitoreo $i ---"
-            monitor_endpoint "http://localhost:3001/health" "Health Endpoint" || true
-            monitor_endpoint "http://localhost:3001/" "Main API" || true
+            monitor_endpoint "http://localhost:3000/health" "Health Endpoint" || true
+            monitor_endpoint "http://localhost:3000/" "Main API" || true
             echo "Esperando 30 segundos..."
             sleep 30
           done
-          
+
           echo "✅ Monitoreo en tiempo real completado"
 
       - name: Security Metrics Collection
         run: |
           echo "📊 Recolectando métricas de seguridad..."
-          
+
           # Recolectar métricas del sistema
           CPU_USAGE=$(top -bn1 | grep "Cpu(s)" | awk '{print $2}' | cut -d'%' -f1)
           MEMORY_USAGE=$(free | grep Mem | awk '{printf("%.2f", ($3/$2) * 100.0)}')
           DISK_USAGE=$(df -h / | awk 'NR==2 {print $5}' | sed 's/%//')
-          
+
           # Recolectar métricas de red
-          NETWORK_CONNECTIONS=$(netstat -an | grep :3001 | wc -l)
-          
+          NETWORK_CONNECTIONS=$(netstat -an | grep :3000 | wc -l)
+
           # Generar reporte de métricas
           cat > security-metrics.json << EOF
           {
@@ -1049,13 +1046,13 @@ jobs:
             }
           }
           EOF
-          
+
           echo "✅ Métricas de seguridad recolectadas"
 
       - name: Automated Security Alerts
         run: |
           echo "🚨 Configurando alertas automáticas..."
-          
+
           # Simular sistema de alertas
           cat > alert-config.json << EOF
           {
@@ -1092,38 +1089,38 @@ jobs:
             }
           }
           EOF
-          
+
           # Simular verificación de condiciones de alerta
           echo "Verificando condiciones de alerta..."
-          
+
           RESPONSE_TIME=150  # ms
           STATUS_CODE=200
           SECURITY_HEADERS_PRESENT=true
-          
+
           if [ $RESPONSE_TIME -gt 2000 ]; then
             echo "🚨 ALERT: High response time detected ($RESPONSE_TIME ms)"
           else
             echo "✅ Response time normal ($RESPONSE_TIME ms)"
           fi
-          
+
           if [ $STATUS_CODE -ge 500 ]; then
             echo "🚨 CRITICAL ALERT: Service error detected (status: $STATUS_CODE)"
           else
             echo "✅ Service status normal (status: $STATUS_CODE)"
           fi
-          
+
           if [ "$SECURITY_HEADERS_PRESENT" = false ]; then
             echo "🚨 SECURITY ALERT: Security headers missing"
           else
             echo "✅ Security headers present"
           fi
-          
+
           echo "✅ Sistema de alertas configurado y funcionando"
 
       - name: Generate Monitoring Report
         run: |
           echo "📋 Generando reporte de monitoreo..."
-          
+
           cat > monitoring-report.json << EOF
           {
             "post_deployment_monitoring": {
@@ -1136,7 +1133,7 @@ jobs:
               "monitored_endpoints": [
                 {
                   "name": "Health Check",
-                  "url": "http://localhost:3001/health",
+                  "url": "http://localhost:3000/health",
                   "status": "operational",
                   "average_response_time_ms": 150,
                   "uptime_percent": 100,
@@ -1144,7 +1141,7 @@ jobs:
                 },
                 {
                   "name": "Main API",
-                  "url": "http://localhost:3001/",
+                  "url": "http://localhost:3000/",
                   "status": "operational",
                   "average_response_time_ms": 200,
                   "uptime_percent": 100,
@@ -1178,7 +1175,7 @@ jobs:
             }
           }
           EOF
-          
+
           echo "✅ Reporte de monitoreo generado"
 
       - name: Upload Monitoring Artifacts
@@ -1196,26 +1193,53 @@ jobs:
       - name: Initialize Continuous Monitoring
         run: |
           echo "🔄 Inicializando monitoreo continuo..."
-          
+
           echo "📡 Configurando monitoreo 24/7:"
           echo "  ✅ Health check monitoring cada 30s"
           echo "  ✅ Security scanning cada 24h"
           echo "  ✅ Performance monitoring continuo"
           echo "  ✅ Compliance checks semanales"
           echo "  ✅ Threat detection en tiempo real"
-          
+
           echo ""
           echo "🚨 Sistema de alertas activo:"
           echo "  ✅ Slack notifications configuradas"
           echo "  ✅ Email alerts habilitadas"
           echo "  ✅ Escalation procedures establecidas"
-          
+
           echo ""
           echo "📊 Dashboards disponibles:"
           echo "  🔗 Security metrics: http://monitoring.company.com/security"
           echo "  🔗 Performance metrics: http://monitoring.company.com/performance"
           echo "  🔗 Compliance status: http://monitoring.company.com/compliance"
-          
+
           echo ""
           echo "✅ Monitoreo post-despliegue completamente configurado"
 
+  # resend email notification
+  email-notification:
+    name: Send Email Notification
+    runs-on: ubuntu-latest
+    needs: [post-deployment-monitoring]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Send Email Notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.resend.com 
+          server_port: 587
+          username: resend
+          password: ${{ secrets.RESEND_API_KEY }}
+          subject: "DevSecOps Pipeline - Security Report"
+          body: |
+            Hola equipo,
+
+            El pipeline de seguridad ha finalizado con éxito. Por favor, revisen el reporte de seguridad generado.
+
+            Saludos,
+            DevSecOps Team
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: "DevSecOps Pipeline <contacto@terraprueba.info>" 
