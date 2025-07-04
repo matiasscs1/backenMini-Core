@@ -873,6 +873,7 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      
       - name: Start Application for Monitoring
         run: |
           echo "🚀 Iniciando aplicación para monitoreo..."
@@ -909,8 +910,32 @@ jobs:
             
             if [ $i -eq 12 ]; then
               echo "❌ La aplicación no respondió después de 2 minutos"
-              echo "Logs del contenedor:"
-              docker logs $(docker ps -q) || echo "No hay contenedores corriendo"
+              
+              # Mostrar logs de cada contenedor individualmente
+              echo "📋 Logs de contenedores:"
+              
+              # Logs del contenedor de la aplicación
+              APP_CONTAINER=$(docker ps --filter "name=maticrud-prod" --format "{{.Names}}" | head -1)
+              if [ ! -z "$APP_CONTAINER" ]; then
+                echo "🚀 Logs de $APP_CONTAINER:"
+                docker logs --tail 50 "$APP_CONTAINER"
+              else
+                echo "❌ Contenedor de aplicación no encontrado"
+              fi
+              
+              # Logs del contenedor de MongoDB
+              MONGO_CONTAINER=$(docker ps --filter "name=mongo-prod" --format "{{.Names}}" | head -1)
+              if [ ! -z "$MONGO_CONTAINER" ]; then
+                echo "🗄️ Logs de $MONGO_CONTAINER:"
+                docker logs --tail 20 "$MONGO_CONTAINER"
+              else
+                echo "❌ Contenedor de MongoDB no encontrado"
+              fi
+              
+              # Estado detallado de contenedores
+              echo "📊 Estado detallado:"
+              docker ps -a
+              
               exit 1
             fi
           done
