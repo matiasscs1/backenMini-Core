@@ -895,7 +895,7 @@ jobs:
           
           # Verificar que esté corriendo
           echo "🔍 Verificando contenedores:"
-          docker ps
+          docker ps -a
           
           # Health check con reintentos
           echo "🏥 Verificando health endpoint..."
@@ -911,35 +911,50 @@ jobs:
             if [ $i -eq 12 ]; then
               echo "❌ La aplicación no respondió después de 2 minutos"
               
-              # Mostrar logs de cada contenedor individualmente
-              echo "📋 Logs de contenedores:"
+              # LOGS OBLIGATORIOS - SIN CONDICIONES
+              echo "=================================="
+              echo "🔍 LOGS DE DEPURACIÓN COMPLETOS"
+              echo "=================================="
               
-              # Logs del contenedor de la aplicación
-              APP_CONTAINER=$(docker ps --filter "name=maticrud-prod" --format "{{.Names}}" | head -1)
-              if [ ! -z "$APP_CONTAINER" ]; then
-                echo "🚀 Logs de $APP_CONTAINER:"
-                docker logs --tail 50 "$APP_CONTAINER"
-              else
-                echo "❌ Contenedor de aplicación no encontrado"
-              fi
-              
-              # Logs del contenedor de MongoDB
-              MONGO_CONTAINER=$(docker ps --filter "name=mongo-prod" --format "{{.Names}}" | head -1)
-              if [ ! -z "$MONGO_CONTAINER" ]; then
-                echo "🗄️ Logs de $MONGO_CONTAINER:"
-                docker logs --tail 20 "$MONGO_CONTAINER"
-              else
-                echo "❌ Contenedor de MongoDB no encontrado"
-              fi
-              
-              # Estado detallado de contenedores
-              echo "📊 Estado detallado:"
+              # Mostrar TODOS los contenedores
+              echo "📊 Todos los contenedores:"
               docker ps -a
+              
+              # Logs del contenedor de aplicación (FORZADO)
+              echo ""
+              echo "🚀 LOGS DE APLICACIÓN (backenmini-core-maticrud-prod-1):"
+              docker logs backenmini-core-maticrud-prod-1 2>&1 || echo "❌ Error al obtener logs de aplicación"
+              
+              # Logs del contenedor de MongoDB (FORZADO)
+              echo ""
+              echo "🗄️ LOGS DE MONGODB (backenmini-core-mongo-prod-1):"
+              docker logs --tail 10 backenmini-core-mongo-prod-1 2>&1 || echo "❌ Error al obtener logs de MongoDB"
+              
+              # Información adicional de debug
+              echo ""
+              echo "🔧 INFORMACIÓN DE DEBUG:"
+              echo "Contenedores en red:"
+              docker network ls
+              echo ""
+              echo "Inspección del contenedor de aplicación:"
+              docker inspect backenmini-core-maticrud-prod-1 --format='{{.State.Status}}: {{.State.Error}}' 2>&1 || echo "No se puede inspeccionar"
+              
+              # Verificar si el puerto está en uso
+              echo ""
+              echo "🌐 Verificación de puertos:"
+              netstat -tuln | grep 3002 || echo "Puerto 3002 no está en uso"
+              
+              # Intentar conectar directamente al contenedor
+              echo ""
+              echo "🔌 Intentando conectar directamente:"
+              docker exec backenmini-core-maticrud-prod-1 ls -la /app 2>&1 || echo "No se puede ejecutar comandos en el contenedor"
+              
+              echo "=================================="
               
               exit 1
             fi
           done
-
+          
       - name: Setup Monitoring Tools
         run: |
           echo "🔧 Configurando herramientas de monitoreo..."
