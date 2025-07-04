@@ -865,6 +865,7 @@ jobs:
      
      # JOB ADICIONAL: Monitoreo Post-Despliegue
   post-deployment-monitoring:
+
     name: Post-Deployment Security Monitoring
     runs-on: ubuntu-latest
     needs: [deploy-production-secure, deployment-policy-validation]
@@ -891,11 +892,11 @@ jobs:
           monitoring:
             endpoints:
               - name: "health"
-                url: "http://localhost:3002/health"
+                url: "http://localhost:3001/health"
                 interval: "30s"
                 timeout: "10s"
               - name: "api"
-                url: "http://localhost:3002/"
+                url: "http://localhost:3001/"
                 interval: "60s"
                 timeout: "15s"
             security_checks:
@@ -996,8 +997,8 @@ jobs:
           echo "Simulando monitoreo continuo por 2 minutos..."
           for i in {1..4}; do
             echo "--- Ciclo de monitoreo $i ---"
-            monitor_endpoint "http://localhost:3002/health" "Health Endpoint" || true
-            monitor_endpoint "http://localhost:3002/" "Main API" || true
+            monitor_endpoint "http://localhost:3001/health" "Health Endpoint" || true
+            monitor_endpoint "http://localhost:3001/" "Main API" || true
             echo "Esperando 30 segundos..."
             sleep 30
           done
@@ -1014,7 +1015,7 @@ jobs:
           DISK_USAGE=$(df -h / | awk 'NR==2 {print $5}' | sed 's/%//')
           
           # Recolectar métricas de red
-          NETWORK_CONNECTIONS=$(netstat -an | grep :3002 | wc -l)
+          NETWORK_CONNECTIONS=$(netstat -an | grep :3001 | wc -l)
           
           # Generar reporte de métricas
           cat > security-metrics.json << EOF
@@ -1135,7 +1136,7 @@ jobs:
               "monitored_endpoints": [
                 {
                   "name": "Health Check",
-                  "url": "http://localhost:3002/health",
+                  "url": "http://localhost:3001/health",
                   "status": "operational",
                   "average_response_time_ms": 150,
                   "uptime_percent": 100,
@@ -1143,7 +1144,7 @@ jobs:
                 },
                 {
                   "name": "Main API",
-                  "url": "http://localhost:3002/",
+                  "url": "http://localhost:3001/",
                   "status": "operational",
                   "average_response_time_ms": 200,
                   "uptime_percent": 100,
