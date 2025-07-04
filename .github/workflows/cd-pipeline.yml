@@ -403,7 +403,7 @@ jobs:
         run: |
           echo "🔍 Verificando seguridad en runtime..."
           # Verificar headers de seguridad
-          RESPONSE=$(curl -s -I http://localhost:3001/health || echo "No response")
+          RESPONSE=$(curl -s -I http://localhost:3002/health || echo "No response")
           if echo "$RESPONSE" | grep -i "x-powered-by"; then
             echo "⚠️ Header X-Powered-By expuesto"
           else
@@ -411,7 +411,7 @@ jobs:
           fi
 
           # Verificar endpoint de salud
-          HEALTH_DATA=$(curl -s http://localhost:3001/health || echo "{}")
+          HEALTH_DATA=$(curl -s http://localhost:3002/health || echo "{}")
           if echo "$HEALTH_DATA" | grep -i "password\|secret\|token"; then
             echo "❌ Información sensible en endpoint de salud"
             exit 1
@@ -423,10 +423,10 @@ jobs:
         run: |
           echo "🧪 Ejecutando pruebas básicas de seguridad..."
           # Test de inyección SQL básica
-          curl -f "http://localhost:3001/health?test='; DROP TABLE users; --" || echo "SQL injection test completed"
+          curl -f "http://localhost:3002/health?test='; DROP TABLE users; --" || echo "SQL injection test completed"
 
           # Test de XSS básico
-          curl -f "http://localhost:3001/health?test=<script>alert('xss')</script>" || echo "XSS test completed"
+          curl -f "http://localhost:3002/health?test=<script>alert('xss')</script>" || echo "XSS test completed"
 
           echo "✅ Pruebas básicas completadas"
 
@@ -870,6 +870,51 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Start Application for Monitoring
+        run: |
+          echo "🚀 Iniciando aplicación para monitoreo..."
+          
+          # Verificar que existen los archivos Docker
+          if [ ! -f "docker-compose.prod.yml" ]; then
+            echo "❌ docker-compose.prod.yml no encontrado"
+            echo "Archivos disponibles:"
+            ls -la
+            exit 1
+          fi
+          
+          # Construir e iniciar la aplicación
+          docker build -f Dockerfile.prod -t maticrud-prod:${{ github.sha }} .
+          docker-compose -f docker-compose.prod.yml up -d
+          
+          echo "⏳ Esperando que la aplicación inicie..."
+          sleep 45
+          
+          # Verificar que esté corriendo
+          echo "🔍 Verificando contenedores:"
+          docker ps
+          
+          # Health check con reintentos
+          echo "🏥 Verificando health endpoint..."
+          for i in {1..12}; do
+            if curl -f http://localhost:3002/health 2>/dev/null; then
+              echo "✅ Aplicación lista en intento $i!"
+              break
+            else
+              echo "⏳ Intento $i/12 - esperando 10s más..."
+              sleep 10
+            fi
+            
+            if [ $i -eq 12 ]; then
+              echo "❌ La aplicación no respondió después de 2 minutos"
+              echo "Logs del contenedor:"
+              docker logs $(docker ps -q) || echo "No hay contenedores corriendo"
+              exit 1
+            fi
+          done
+
       - name: Setup Monitoring Tools
         run: |
           echo "🔧 Configurando herramientas de monitoreo..."
@@ -889,11 +934,11 @@ jobs:
           monitoring:
             endpoints:
               - name: "health"
-                url: "http://localhost:3001/health"
+                url: "http://localhost:3002/health"
                 interval: "30s"
                 timeout: "10s"
               - name: "api"
-                url: "http://localhost:3001/"
+                url: "http://localhost:3002/"
                 interval: "60s"
                 timeout: "15s"
             security_checks:
@@ -994,8 +1039,8 @@ jobs:
           echo "Simulando monitoreo continuo por 2 minutos..."
           for i in {1..4}; do
             echo "--- Ciclo de monitoreo $i ---"
-            monitor_endpoint "http://localhost:3001/health" "Health Endpoint" || true
-            monitor_endpoint "http://localhost:3001/" "Main API" || true
+            monitor_endpoint "http://localhost:3002/health" "Health Endpoint" || true
+            monitor_endpoint "http://localhost:3002/" "Main API" || true
             echo "Esperando 30 segundos..."
             sleep 30
           done
@@ -1012,7 +1057,7 @@ jobs:
           DISK_USAGE=$(df -h / | awk 'NR==2 {print $5}' | sed 's/%//')
 
           # Recolectar métricas de red
-          NETWORK_CONNECTIONS=$(netstat -an | grep :3001 | wc -l)
+          NETWORK_CONNECTIONS=$(netstat -an | grep :3002 | wc -l)
 
           # Generar reporte de métricas
           cat > security-metrics.json << EOF
@@ -1133,7 +1178,7 @@ jobs:
               "monitored_endpoints": [
                 {
                   "name": "Health Check",
-                  "url": "http://localhost:3001/health",
+                  "url": "http://localhost:3002/health",
                   "status": "operational",
                   "average_response_time_ms": 150,
                   "uptime_percent": 100,
@@ -1141,7 +1186,7 @@ jobs:
                 },
                 {
                   "name": "Main API",
-                  "url": "http://localhost:3001/",
+                  "url": "http://localhost:3002/",
                   "status": "operational",
                   "average_response_time_ms": 200,
                   "uptime_percent": 100,
