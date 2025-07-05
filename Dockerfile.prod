@@ -20,7 +20,7 @@ RUN npm ci --only=production --no-audit --no-fund
 # Auditar dependencias (no fallar por vulnerabilidades para demo)
 RUN npm audit --audit-level=critical --production || echo "⚠️ Vulnerabilidades encontradas - revisar en producción real"
 
-# Copiar código fuente
+# Copiar código fuente (preservando estructura exacta)
 COPY src ./src
 
 # Etapa de producción
@@ -41,6 +41,16 @@ COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/package.json ./
 COPY --chown=nodejs:nodejs src ./src
 
+# Verificar estructura de archivos (para debug)
+RUN echo "📁 Estructura de archivos copiados:" && \
+    find src -type f -name "*.js" | sort && \
+    echo "📁 Contenido de src/:" && \
+    ls -la src/ && \
+    echo "📁 Verificando Routes/:" && \
+    ls -la src/Routes/ 2>/dev/null || echo "❌ src/Routes/ no existe" && \
+    echo "📁 Verificando routes/:" && \
+    ls -la src/routes/ 2>/dev/null || echo "❌ src/routes/ no existe"
+
 # Crear directorios necesarios
 RUN mkdir -p logs tmp && \
     chown -R nodejs:nodejs logs tmp
@@ -58,9 +68,6 @@ USER nodejs
 
 # Exponer puerto
 EXPOSE 3000
-
-# Sin health check interno - se maneja externamente
-# HEALTHCHECK NONE
 
 # Variables de entorno de seguridad
 ENV NODE_ENV=production

@@ -1,7 +1,7 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
-import routes from "./Routes/routes.js";
+import routes from "./routes/routes.js";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 
