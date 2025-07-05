@@ -46,19 +46,21 @@ RUN echo "📁 Estructura de archivos copiados:" && \
     find src -type f -name "*.js" | sort && \
     echo "📁 Contenido de src/:" && \
     ls -la src/ && \
-    echo "📁 Verificando Routes/:" && \
-    ls -la src/Routes/ 2>/dev/null || echo "❌ src/Routes/ no existe" && \
     echo "📁 Verificando routes/:" && \
-    ls -la src/routes/ 2>/dev/null || echo "❌ src/routes/ no existe"
+    ls -la src/routes/ 2>/dev/null || echo "❌ src/routes/ no existe" && \
+    echo "📄 Contenido del archivo routes.js:" && \
+    head -5 src/routes/routes.js 2>/dev/null || echo "❌ No se puede leer routes.js"
 
 # Crear directorios necesarios
 RUN mkdir -p logs tmp && \
     chown -R nodejs:nodejs logs tmp
 
-# Configurar permisos seguros
+# CAMBIO IMPORTANTE: Configurar permisos ANTES del chmod
+RUN chown -R nodejs:nodejs /app
+
+# Configurar permisos seguros (CORREGIDO: no cambiar permisos de archivos .js)
 RUN chmod -R 755 /app && \
-    chmod -R 644 /app/src && \
-    chmod 755 /app/src
+    find /app/src -name "*.js" -exec chmod 644 {} \;
 
 # Remover herramientas innecesarias por seguridad
 RUN rm -rf /tmp/* /var/cache/apk/* /root/.npm
