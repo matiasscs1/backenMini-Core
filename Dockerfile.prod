@@ -78,6 +78,7 @@ RUN rm -rf /tmp/* /var/cache/apk/* /root/.npm
 USER nodejs
 
 # Exponer puerto
+#
 EXPOSE 3000
 
 # Variables de entorno de seguridad
