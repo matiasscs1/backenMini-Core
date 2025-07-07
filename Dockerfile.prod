@@ -41,6 +41,10 @@ COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/package.json ./
 COPY --chown=nodejs:nodejs src ./src
 
+# Añade esta línea para configurar el SHELL antes de los comandos con pipes
+# Esto resuelve la advertencia DL4006
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+
 # Verificar estructura de archivos (para debug)
 RUN echo "📁 Estructura de archivos copiados:" && \
     find src -type f -name "*.js" | sort && \
@@ -50,6 +54,11 @@ RUN echo "📁 Estructura de archivos copiados:" && \
     ls -la src/routes/ 2>/dev/null || echo "❌ src/routes/ no existe" && \
     echo "📄 Contenido del archivo routes.js:" && \
     head -5 src/routes/routes.js 2>/dev/null || echo "❌ No se puede leer routes.js"
+
+# Restaurar el SHELL predeterminado si es necesario para RUNs posteriores
+# (aunque en este caso, el shell con pipefail es generalmente mejor)
+# Si no hay más RUNs con pipes, o si quieres que todos usen pipefail, puedes omitir la siguiente línea.
+# SHELL ["/bin/sh", "-c"] # Opcional: para volver al comportamiento por defecto
 
 # Crear directorios necesarios
 RUN mkdir -p logs tmp && \
